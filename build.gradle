@@ -1,0 +1,62 @@
+plugins {
+    id 'java'
+    id 'com.github.johnrengelman.shadow' version '7.1.2'
+}
+
+group = 'org.example'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+// Указываем единую версию LWJGL
+ext {
+    lwjglVersion = '3.3.3'
+    jomlVersion = '1.10.5'
+}
+
+dependencies {
+    // Основные модули LWJGL
+    implementation platform("org.lwjgl:lwjgl-bom:$lwjglVersion")
+
+    implementation "org.lwjgl:lwjgl"
+    implementation "org.lwjgl:lwjgl-opengl"
+    implementation "org.lwjgl:lwjgl-glfw"
+    implementation "org.lwjgl:lwjgl-stb"
+
+    // JOML (только один раз)
+    implementation "org.joml:joml:${jomlVersion}"
+
+    // Natives для Windows
+    runtimeOnly "org.lwjgl:lwjgl::natives-windows"
+    runtimeOnly "org.lwjgl:lwjgl-opengl::natives-windows"
+    runtimeOnly "org.lwjgl:lwjgl-glfw::natives-windows"
+    runtimeOnly "org.lwjgl:lwjgl-stb::natives-windows"
+}
+
+// Указываем версию Java
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'org.example.Main',
+                'Implementation-Title': 'Minecraftik' ,
+                'Implementation-Version': '0.0.1'
+    }
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+// Если хотите использовать shadowJar для создания fat jar
+shadowJar {
+    archiveBaseName.set('minecraft')
+    archiveVersion.set('1.0')
+    archiveClassifier.set('')
+}
