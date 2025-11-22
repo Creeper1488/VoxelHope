@@ -10,6 +10,7 @@ import org.lwjgl.system.*;
 import java.nio.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import static org.lwjgl.glfw.Callbacks.*;
 import static org.lwjgl.glfw.GLFW.*;
@@ -63,10 +64,9 @@ public class Main {
         // Configure GLFW
         glfwDefaultWindowHints(); // optional, the current window hints are already the default
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE); // the window will stay hidden after creation
-        glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE); // the window will be resizable
 
         // Create the window
-        window = glfwCreateWindow(1920, 1080, "VoxelLand: lagva edition", NULL, NULL);
+        window = glfwCreateWindow(1920, 1080, "VoxelHope", NULL, NULL);
         if ( window == NULL )
             throw new RuntimeException("Failed to create the GLFW window");
 
@@ -134,10 +134,44 @@ public class Main {
                 cubes.add(new Cube(x, -1.7f, z, 0, true, 2));
             }
         }
-        float distantZ = -4.1f - 39 * 0.3f;
-        for(int i = 0; i < 80; i++) {
-            float x = -10f + i * 0.3f;
-            cubes.add(new Cube(x, -1.4f, distantZ, 0, true, 2));
+        Random rand = new Random();
+        for(int i = 0; i < 40; i++) {
+            float z = -4.1f - i * 0.3f;
+            int leftHeight = 2 + rand.nextInt(3);  // высота 2-4 блока
+            int rightHeight = 2 + rand.nextInt(3);
+
+            for(int h = 0; h < leftHeight; h++) {
+                cubes.add(new Cube(-10.3f, -1.7f + h * 0.3f, z, 0, true, 2));
+            }
+            for(int h = 0; h < rightHeight; h++) {
+                cubes.add(new Cube(13.7f, -1.7f + h * 0.3f, z, 0, true, 2));
+            }
+        }
+        for(int x = 0; x < 80; x++) {
+            int wallHeight = 2 + rand.nextInt(2);  // высота 2-3 блока
+            for(int y = 0; y < wallHeight; y++) {
+                float xPos = -10f + x * 0.3f;
+                float yPos = -1.7f + y * 0.3f;
+                cubes.add(new Cube(xPos, yPos, -16.5f, 0, true, 2));
+            }
+        }
+        for (int i = 0; i < cubes.size(); i++) {
+            Cube current = cubes.get(i);
+
+            // Ищем кубы с такими же XZ
+            for (int j = 0; j < cubes.size(); j++) {
+                if (i != j) { // не сравниваем с самим собой
+                    Cube other = cubes.get(j);
+                    if (Math.abs(current.x - other.x) < 0.01f &&
+                            Math.abs(current.z - other.z) < 0.01f) {
+                        // Нашли куб в той же колонке
+                        if (other.y > current.y) {
+                            // Нашли куб выше - current не верхний
+                            break;
+                        }
+                    }
+                }
+            }
         }
         // Get the thread stack and push a new frame
         try ( MemoryStack stack = stackPush() ) {
@@ -167,7 +201,6 @@ public class Main {
         glfwShowWindow(window);
     }
     private void gradientBg(int type) {
-        if(type == 1) {
             glMatrixMode(GL_PROJECTION);
             glPushMatrix();
             glLoadIdentity();
@@ -186,7 +219,7 @@ public class Main {
 
             glBegin(GL_QUADS);
 
-
+        if(type == 1) {
             glColor3f(135 / 255f, 206 / 255f, 235 / 255f);
             glVertex2f(0, 0);
             glVertex2f(1920, 0);
@@ -194,37 +227,8 @@ public class Main {
             glColor3f(0 / 255f, 191 / 255f, 255 / 255f);
             glVertex2f(1920, 1080);
             glVertex2f(0, 1080);
-
-            glEnd();
-
-            glDepthMask(true);
-            glDisable(GL_BLEND);
-
-            glPopMatrix();
-            glMatrixMode(GL_PROJECTION);
-            glPopMatrix();
-            glMatrixMode(GL_MODELVIEW);
         }
         else {
-            glMatrixMode(GL_PROJECTION);
-            glPushMatrix();
-            glLoadIdentity();
-            glOrtho(0, 1920, 0, 1080, -1, 1);
-
-
-            glMatrixMode(GL_MODELVIEW);
-            glPushMatrix();
-            glLoadIdentity();
-
-            glEnable(GL_BLEND);
-            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_DST_ALPHA);
-
-            glDepthMask(false);
-
-
-            glBegin(GL_QUADS);
-
-
             glColor3f(42 / 255f, 42 / 255f, 53 / 255f);
             glVertex2f(0, 0);
             glVertex2f(1920, 0);
@@ -232,6 +236,7 @@ public class Main {
             glColor3f(19 / 255f,24 / 255f,98 / 255f);
             glVertex2f(1920, 1080);
             glVertex2f(0, 1080);
+        }
 
             glEnd();
 
@@ -242,7 +247,6 @@ public class Main {
             glMatrixMode(GL_PROJECTION);
             glPopMatrix();
             glMatrixMode(GL_MODELVIEW);
-        }
     }
 
     private void loop() {
