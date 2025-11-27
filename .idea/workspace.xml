@@ -4,9 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="cefc22c9-0aa8-4dbf-a10d-6b36ba156053" name="Changes" comment="">
-      <change beforePath="Z:/VoxelHope/.idea/workspace.xml" beforeDir="false" afterPath="Z:/VoxelHope/.idea/workspace.xml" afterDir="false" />
-    </list>
+    <list default="true" id="cefc22c9-0aa8-4dbf-a10d-6b36ba156053" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -78,8 +76,8 @@
 }]]></component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
-      <recent name="Z:\VoxelHope\src\main\resources" />
       <recent name="Z:\VoxelHope" />
+      <recent name="Z:\VoxelHope\src\main\resources" />
       <recent name="Z:\VoxelHope\src\main\java\org\example" />
     </key>
     <key name="CopyClassDialog.RECENTS_KEY">
