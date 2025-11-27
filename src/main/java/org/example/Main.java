@@ -29,6 +29,13 @@ public class Main {
     private int type_bg = 1;
     private boolean F3_change = false;
     private boolean T_change = false;
+    private List<Entity> entities = new ArrayList<>();
+    private float camX = 0.0f, camY = 0.0f, camZ = 5.0f;
+    private float camPitch = 0.0f, camYaw = 0.0f;
+    private boolean firstMouse = true;
+    private double lastMouseX, lastMouseY;
+    private MusicPlayer musicPlayer;
+
 
 
     public void run() {
@@ -71,23 +78,33 @@ public class Main {
             throw new RuntimeException("Failed to create the GLFW window");
 
         currentCube = new Cube(0, 0, -5, 0, false, 2);
+        musicPlayer = new MusicPlayer();
+        musicPlayer.playMusic();
 
         // Setup a key callback. It will be called every time a key is pressed, repeated or released.
         glfwSetKeyCallback(window, (window, key, scancode, action, mods) -> {
             if(action == GLFW_PRESS || action == GLFW_REPEAT) {
                 switch(key) {
+                    case GLFW_KEY_W -> moveCamera(-0.1f, 0, 0);    // Вперед
+                    case GLFW_KEY_S -> moveCamera(0.1f, 0, 0);   // Назад
+                    case GLFW_KEY_A -> moveCamera(0, 0, -0.1f);    // Влево
+                    case GLFW_KEY_D -> moveCamera(0, 0, 0.1f);   // Вправо
+                    case GLFW_KEY_SPACE -> moveCamera(0, 0.1f, 0);    // Вверх
+                    case GLFW_KEY_LEFT_SHIFT -> moveCamera(0, -0.1f, 0); // Вниз
                     case GLFW_KEY_UP -> currentCube.y += 0.05f;
                     case GLFW_KEY_DOWN -> currentCube.y -= 0.05f;
                     case GLFW_KEY_LEFT -> currentCube.x -= 0.05f;
                     case GLFW_KEY_RIGHT -> currentCube.x += 0.05f;
-                    case GLFW_KEY_W -> currentCube.z += 0.05f;
-                    case GLFW_KEY_S -> currentCube.z -= 0.05f;
+                    case GLFW_KEY_O -> currentCube.z += 0.05f;
+                    case GLFW_KEY_L -> currentCube.z -= 0.05f;
                     case GLFW_KEY_R -> rotating = !rotating;
                     case GLFW_KEY_1 -> currentCube.type = 1;
                     case GLFW_KEY_2 -> currentCube.type = 2;
                     case GLFW_KEY_3 -> currentCube.type = 3;
                     case GLFW_KEY_4 -> currentCube.type = 4;
                     case GLFW_KEY_5 -> currentCube.type = 5;
+                    case GLFW_KEY_6 -> currentCube.type = 6;
+                    case GLFW_KEY_7 -> currentCube.type = 7;
                     case GLFW_KEY_ESCAPE -> System.out.print("ESC нажата!");
                     case GLFW_KEY_F3 -> {
                         if (!F3_change) {
@@ -116,60 +133,82 @@ public class Main {
                             case 3 -> currentCube = new Cube(0,0, -5, 0, false, 3);
                             case 4 -> currentCube = new Cube(0, 0, -5, 0, false, 4);
                             case 5 -> currentCube = new Cube(0,0, -5, 0, false, 5);
+                            case 6 -> currentCube = new Cube(0,0, -5, 0, false, 6);
+                            case 7 -> currentCube = new Cube(0,0, -5, 0, false, 7);
                         }
                     }
                 }
             }
         });
+        glfwSetCursorPosCallback(window, (window, xpos, ypos) -> {
+            if (firstMouse) {
+                lastMouseX = xpos;
+                lastMouseY = ypos;
+                firstMouse = false;
+            }
+
+            float xoffset = (float)(xpos - lastMouseX);
+            float yoffset = (float)(lastMouseY - ypos);
+            lastMouseX = xpos;
+            lastMouseY = ypos;
+
+            float sensitivity = 0.1f;
+            xoffset *= sensitivity;
+            yoffset *= sensitivity;
+
+            camYaw += xoffset;
+            camPitch += yoffset;
+
+            if (camPitch > 89.0f) camPitch = 89.0f;
+            if (camPitch < -89.0f) camPitch = -89.0f;
+        });
+        glfwSetScrollCallback(window, (window, xoffset, yoffset) -> {
+            if (yoffset > 0) {
+                currentCube.type = Math.min(7, currentCube.type + 1);
+            } else {
+                currentCube.type = Math.max(1, currentCube.type - 1);
+            }
+        });
+
+        // Захватываем курсор
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
         switch(currentCube.type) {
             case 1 -> currentCube = new Cube(0, 0, -5, 0, false, 1);
             case 2 -> currentCube = new Cube(0, 0, -5, 0, false, 2);
             case 3 -> currentCube = new Cube(0, 0, -5, 0, false, 3);
             case 4 -> currentCube = new Cube(0, 0, -5, 0, false, 4);
+            case 5 -> currentCube = new Cube(0, 0, -5, 0, false, 5);
+            case 6 -> currentCube = new Cube(0, 0, -5, 0, false, 6);
+            case 7 -> currentCube = new Cube(0, 0, -5, 0, false, 7);
         }
-        for(int row = 0; row < 40; row++) {
-            float z = -4.1f - row * 0.3f;
-            for(int i = 0; i < 80; i++){
-                float x = -10f + i * 0.3f;
-                cubes.add(new Cube(x, -1.7f, z, 0, true, 2));
-            }
-        }
-        Random rand = new Random();
-        for(int i = 0; i < 40; i++) {
-            float z = -4.1f - i * 0.3f;
-            int leftHeight = 2 + rand.nextInt(3);  // высота 2-4 блока
-            int rightHeight = 2 + rand.nextInt(3);
+       Random rand = new Random();
+        int seed = rand.nextInt();
 
-            for(int h = 0; h < leftHeight; h++) {
-                cubes.add(new Cube(-10.3f, -1.7f + h * 0.3f, z, 0, true, 2));
-            }
-            for(int h = 0; h < rightHeight; h++) {
-                cubes.add(new Cube(13.7f, -1.7f + h * 0.3f, z, 0, true, 2));
-            }
-        }
         for(int x = 0; x < 80; x++) {
-            int wallHeight = 2 + rand.nextInt(2);  // высота 2-3 блока
-            for(int y = 0; y < wallHeight; y++) {
-                float xPos = -10f + x * 0.3f;
-                float yPos = -1.7f + y * 0.3f;
-                cubes.add(new Cube(xPos, yPos, -16.5f, 0, true, 2));
-            }
-        }
-        for (int i = 0; i < cubes.size(); i++) {
-            Cube current = cubes.get(i);
+            for(int z = 0; z < 40; z++) {
+                // Получаем высоту из шума
+                float heightNoise = (float) (
+                        Math.sin(x * 0.1 + seed) * Math.cos(z * 0.08 + seed) * 1.5 +
+                                Math.sin(x * 0.05 + z * 0.03 + seed * 2) * 0.8
+                );
 
-            // Ищем кубы с такими же XZ
-            for (int j = 0; j < cubes.size(); j++) {
-                if (i != j) { // не сравниваем с самим собой
-                    Cube other = cubes.get(j);
-                    if (Math.abs(current.x - other.x) < 0.01f &&
-                            Math.abs(current.z - other.z) < 0.01f) {
-                        // Нашли куб в той же колонке
-                        if (other.y > current.y) {
-                            // Нашли куб выше - current не верхний
-                            break;
-                        }
-                    }
+                int blockHeight = 2 + (int)(heightNoise * 1.5); // высота от 1 до 4 блоков
+                if(blockHeight < 1) blockHeight = 1;
+                if(blockHeight > 4) blockHeight = 4;
+
+                // Генерация блоков для этой колонки
+                for(int h = 0; h < blockHeight; h++) {
+                    float worldX = -10f + x * 0.3f;
+                    float worldZ = -4.1f - z * 0.3f;
+                    float worldY = -1.7f + h * 0.3f;
+
+                    cubes.add(new Cube(worldX, worldY, worldZ, 0, true,
+                            h == blockHeight - 1 ? 2 : 1)); // трава сверху, земля снизу
+                }
+
+                // РЕДКИЕ деревья - только 2% шанс
+                if(blockHeight >= 2 && rand.nextInt(50) == 0) { // всего 2% шанс
+                    addTree(-10f + x * 0.3f, -1.7f + (blockHeight - 1) * 0.3f, -4.1f - z * 0.3f);
                 }
             }
         }
@@ -199,6 +238,15 @@ public class Main {
 
         // Make the window visible
         glfwShowWindow(window);
+    }
+    private void moveCamera(float forward, float up, float right) {
+        // Учитываем направление взгляда камеры
+        float yawRad = (float)Math.toRadians(camYaw);
+
+        // Движение вперед/назад и влево/вправо с учетом направления
+        camX += forward * (float)Math.sin(yawRad) + right * (float)Math.cos(yawRad);
+        camZ += forward * (float)Math.cos(yawRad) - right * (float)Math.sin(yawRad);
+        camY += up;
     }
     private void gradientBg(int type) {
             glMatrixMode(GL_PROJECTION);
@@ -263,8 +311,21 @@ public class Main {
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
         // Run the rendering loop until the user has attempted to close
         // the window or has pressed the ESCAPE key.
+
+        double lastTime = glfwGetTime();
+        int frames = 0;
+        double fps = 0;
+
         while ( !glfwWindowShouldClose(window) ) {
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the framebuffer
+
+            double currentTime = glfwGetTime();
+            frames++;
+            if (currentTime - lastTime >= 1.0) {
+                fps = frames;
+                frames = 0;
+                lastTime = currentTime;
+            }
 
             glMatrixMode(GL_PROJECTION);
             glLoadMatrixf(fb);
@@ -272,7 +333,18 @@ public class Main {
                 gradientBg(1);
             else
                 gradientBg(2);
+            glMatrixMode(GL_MODELVIEW);
+            glLoadIdentity();
+
+            // Применяем преобразования камеры
+            glRotatef(camPitch, 1.0f, 0.0f, 0.0f);
+            glRotatef(camYaw, 0.0f, 1.0f, 0.0f);
+            glTranslatef(-camX, -camY, -camZ);
+            if (F3_change) {
+                renderDebugHUD(fps);
+            }
             draw_sun();
+
 
             for (Cube cube : cubes) {
                 switch(cube.type) {
@@ -281,6 +353,8 @@ public class Main {
                     case 3 -> drawODNOTON(cube, 194, 178, 128);
                     case 4 -> draw_dub(cube);
                     case 5 -> drawODNOTON(cube, 92, 169, 4);
+                    case 6 -> drawODNOTON(cube, 255, 165, 79);
+                    case 7 -> drawODNOTON(cube, 173, 165, 135);
                 }
             }
             switch(currentCube.type) {
@@ -289,11 +363,12 @@ public class Main {
                 case 3 -> drawODNOTON(currentCube, 194, 178, 128);
                 case 4 -> draw_dub(currentCube);
                 case 5 -> drawODNOTON(currentCube, 92, 169, 4);
+                case 6 -> drawODNOTON(currentCube, 255, 165, 79);
+                case 7 -> drawODNOTON(currentCube, 173, 165, 135);
             }
 
             if(rotating)
                 currentCube.angle += 0.5f;
-
 
 
             glfwSwapBuffers(window); // swap the color buffers
@@ -303,9 +378,88 @@ public class Main {
             glfwPollEvents();
         }
     }
-    private void drawCubedirt(Cube cube) {
-        glMatrixMode(GL_MODELVIEW);
+    private void renderDebugHUD(double fps) {
+        // Сохраняем текущие матрицы
+        glMatrixMode(GL_PROJECTION);
+        glPushMatrix();
         glLoadIdentity();
+        glOrtho(0, 1920, 0, 1080, -1, 1);
+
+        glMatrixMode(GL_MODELVIEW);
+        glPushMatrix();
+        glLoadIdentity();
+
+        // Отключаем тест глубины для HUD
+        glDisable(GL_DEPTH_TEST);
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+        // Рисуем полупрозрачный фон для текста
+        glColor4f(0.0f, 0.0f, 0.0f, 0.7f); // Черный с прозрачностью
+        glBegin(GL_QUADS);
+        glVertex2f(5, 1075);
+        glVertex2f(400, 1075);
+        glVertex2f(400, 950);
+        glVertex2f(5, 950);
+        glEnd();
+
+        // Рисуем белые прямоугольники как "текст"
+        glColor3f(1.0f, 1.0f, 1.0f); // Белый цвет
+
+        float y = 1060f;
+
+        // VoxelHope Alpha 0.0.4
+        drawDebugTextLine(10, y, 250, 15);
+        y -= 20f;
+
+        // Camera coordinates
+        drawDebugTextLine(10, y, 200, 15);
+        y -= 20f;
+
+        // Rotation
+        drawDebugTextLine(10, y, 180, 15);
+        y -= 20f;
+
+        // Blocks count
+        drawDebugTextLine(10, y, 120, 15);
+        y -= 20f;
+
+        // FPS
+        drawDebugTextLine(10, y, 80, 15);
+
+        // Восстанавливаем настройки
+        glDisable(GL_BLEND);
+        glEnable(GL_DEPTH_TEST);
+
+        glPopMatrix();
+        glMatrixMode(GL_PROJECTION);
+        glPopMatrix();
+        glMatrixMode(GL_MODELVIEW);
+    }
+
+    private void drawDebugTextLine(float x, float y, float width, float height) {
+        glBegin(GL_QUADS);
+        glVertex2f(x, y);
+        glVertex2f(x + width, y);
+        glVertex2f(x + width, y - height);
+        glVertex2f(x, y - height);
+        glEnd();
+    }
+    private void addTree(float x, float y, float z) {
+        // Ствол дерева (3 блока высотой)
+        cubes.add(new Cube(x, y + 0.3f, z, 0, true, 4)); // дуб
+        cubes.add(new Cube(x, y + 0.6f, z, 0, true, 4)); // дуб
+        cubes.add(new Cube(x, y + 0.9f, z, 0, true, 4)); // дуб
+
+        // Листва (простой крест)
+        cubes.add(new Cube(x, y + 1.2f, z, 0, true, 5)); // центр
+        cubes.add(new Cube(x + 0.3f, y + 1.2f, z, 0, true, 5)); // право
+        cubes.add(new Cube(x - 0.3f, y + 1.2f, z, 0, true, 5)); // лево
+        cubes.add(new Cube(x, y + 1.2f, z + 0.3f, 0, true, 5)); // вперед
+        cubes.add(new Cube(x, y + 1.2f, z - 0.3f, 0, true, 5)); // назад
+    }
+    private void drawCubedirt(Cube cube) {
+        glPushMatrix();
         glTranslatef(cube.x, cube.y, cube.z);
         glRotatef(cube.angle, 0f, 1f, 0f);
         glScalef(0.33f, 0.33f, 0.33f);
@@ -340,7 +494,7 @@ public class Main {
         glVertex3f(0.5f, -0.5f, -0.5f);
         glVertex3f(0.5f, 0.5f, -0.5f);
         glVertex3f(0.5f, 0.5f, 0.5f);
-        glVertex3f(0.5f, -0.5f, -0.5f);
+        glVertex3f(0.5f, -0.5f, 0.5f);
 
         //left face
         glColor3f(120 / 255f, 20 / 255f, 0 / 255f);
@@ -349,10 +503,10 @@ public class Main {
         glVertex3f(-0.5f, 0.5f, 0.5f);
         glVertex3f(-0.5f, 0.5f, -0.5f);
         glEnd();
+        glPopMatrix();
     }
     private void drawODNOTON(Cube cube, float R, float G, float B) {
-        glMatrixMode(GL_MODELVIEW);
-        glLoadIdentity();
+        glPushMatrix();
         glTranslatef(cube.x, cube.y, cube.z);
         glRotatef(cube.angle, 0f, 1f, 0f);
         glScalef(0.33f, 0.33f, 0.33f);
@@ -396,10 +550,10 @@ public class Main {
         glVertex3f(-0.5f, 0.5f, 0.5f);
         glVertex3f(-0.5f, 0.5f, -0.5f);
         glEnd();
+        glPopMatrix();
     }
     private void draw_dub(Cube cube) {
-        glMatrixMode(GL_MODELVIEW);
-        glLoadIdentity();
+        glPushMatrix();
         glTranslatef(cube.x, cube.y, cube.z);
         glRotatef(cube.angle, 0f, 1f, 0f);
         glScalef(0.33f, 0.33f, 0.33f);
@@ -442,77 +596,45 @@ public class Main {
         glVertex3f(-0.5f, 0.5f, 0.5f);
         glVertex3f(-0.5f, 0.5f, -0.5f);
         glEnd();
+        glPopMatrix();
     }
     private void draw_sun() {
-        IntBuffer widthBuffer = BufferUtils.createIntBuffer(1);
-        IntBuffer heightBuffer = BufferUtils.createIntBuffer(1);
-        glfwGetWindowSize(window, widthBuffer, heightBuffer);
-        int windowWidth = widthBuffer.get(0);
-        int windowHeight = heightBuffer.get(0);
-
-        // Вычисляем viewport с фиксированным соотношением 4:3
-        int viewportWidth, viewportHeight;
-        int viewportX, viewportY;
-
-        float targetAspect = 4.0f / 3.0f;
-        float aspect = (float)windowWidth / windowHeight;
-
-        if (aspect > targetAspect) {
-            // Окно шире целевого соотношения
-            viewportHeight = windowHeight;
-            viewportWidth = (int)(windowHeight * targetAspect);
-            viewportX = (windowWidth - viewportWidth) / 2;
-            viewportY = 0;
-        } else {
-            // Окно уже целевого соотношения
-            viewportWidth = windowWidth;
-            viewportHeight = (int)(windowWidth / targetAspect);
-            viewportX = 0;
-            viewportY = (windowHeight - viewportHeight) / 2;
-        }
-
-        glViewport(viewportX, viewportY, viewportWidth, viewportHeight);
-
-        // Теперь используем стандартную ортографическую проекцию
-        glMatrixMode(GL_PROJECTION);
         glPushMatrix();
+
+        // Используем только вращение камеры, но не позицию
         glLoadIdentity();
-        glOrtho(0, 800, 0, 600, -1, 1);
+        glRotatef(camPitch, 1.0f, 0.0f, 0.0f);
+        glRotatef(camYaw, 0.0f, 1.0f, 0.0f);
 
-        glMatrixMode(GL_MODELVIEW);
-        glPushMatrix();
-        glLoadIdentity();
+        // Солнце на фиксированном расстоянии (очень далеко)
+        glTranslatef(0, 10.0f, -50.0f);
 
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        glDepthMask(false);
+        float sunSize = 5.0f;
+        glScalef(sunSize, sunSize, sunSize);
 
-        // Квадратное солнце
-        float size = 80f;
-        float centerX = 400f;
-        float centerY = 450f;
-
-        glColor3f(1.0f, 1.0f, 0.0f);
+        glColor3f(1.0f, 1.0f, 0.8f);
         glBegin(GL_QUADS);
-        glVertex2f(centerX - size/2, centerY - size/2);
-        glVertex2f(centerX + size/2, centerY - size/2);
-        glVertex2f(centerX + size/2, centerY + size/2);
-        glVertex2f(centerX - size/2, centerY + size/2);
+        glVertex3f(-0.5f, -0.5f, 0.5f);
+        glVertex3f(0.5f, -0.5f, 0.5f);
+        glVertex3f(0.5f, 0.5f, 0.5f);
+        glVertex3f(-0.5f, 0.5f, 0.5f);
         glEnd();
 
-        glDepthMask(true);
-        glDisable(GL_BLEND);
-
         glPopMatrix();
-        glMatrixMode(GL_PROJECTION);
-        glPopMatrix();
-        glMatrixMode(GL_MODELVIEW);
-
-        // Восстанавливаем полный viewport для 3D-рендеринга
-        glViewport(0, 0, windowWidth, windowHeight);
     }
 
     public static void main(String[] args) {
-        new Main().run();
+        try {
+            new Main().run();
+        } catch (Exception e) {
+            e.printStackTrace();
+            // Ждем ввод, чтобы увидеть ошибку
+            System.out.println("Нажмите Enter для выхода...");
+            try {
+                System.in.read();
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        }
     }
 }

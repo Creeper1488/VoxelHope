@@ -24,7 +24,6 @@ dependencies {
     implementation "org.lwjgl:lwjgl-opengl"
     implementation "org.lwjgl:lwjgl-glfw"
     implementation "org.lwjgl:lwjgl-stb"
-
     // JOML (только один раз)
     implementation "org.joml:joml:${jomlVersion}"
 
@@ -52,11 +51,4 @@ jar {
     }
 
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-}
-
-// Если хотите использовать shadowJar для создания fat jar
-shadowJar {
-    archiveBaseName.set('VoxelHope')
-    archiveVersion.set('1.0')
-    archiveClassifier.set('')
 }

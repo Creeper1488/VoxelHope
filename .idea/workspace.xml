@@ -5,11 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="cefc22c9-0aa8-4dbf-a10d-6b36ba156053" name="Changes" comment="">
-      <change afterPath="Z:/VoxelHope/.gitattributes" afterDir="false" />
-      <change afterPath="Z:/VoxelHope/README.md" afterDir="false" />
-      <change beforePath="Z:/VoxelHope/.gitignore" beforeDir="false" afterPath="Z:/VoxelHope/.gitignore" afterDir="false" />
-      <change beforePath="Z:/VoxelHope/.idea/gradle.xml" beforeDir="false" afterPath="Z:/VoxelHope/.idea/gradle.xml" afterDir="false" />
-      <change beforePath="Z:/VoxelHope/.idea/misc.xml" beforeDir="false" afterPath="Z:/VoxelHope/.idea/misc.xml" afterDir="false" />
+      <change afterPath="Z:/VoxelHope/Peaceful_b__27__2025__2205.wav" afterDir="false" />
+      <change afterPath="Z:/VoxelHope/src/main/java/org/example/MusicPlayer.java" afterDir="false" />
       <change beforePath="Z:/VoxelHope/.idea/workspace.xml" beforeDir="false" afterPath="Z:/VoxelHope/.idea/workspace.xml" afterDir="false" />
       <change beforePath="Z:/VoxelHope/build.gradle" beforeDir="false" afterPath="Z:/VoxelHope/build.gradle" afterDir="false" />
       <change beforePath="Z:/VoxelHope/src/main/java/org/example/Main.java" beforeDir="false" afterPath="Z:/VoxelHope/src/main/java/org/example/Main.java" afterDir="false" />
@@ -79,11 +76,16 @@
     "Gradle.VoxelHope::VoxelHope [:org.example.Main.main()].executor": "Run",
     "Gradle.VoxelHope::VoxelHope [jar].executor": "Run",
     "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "Merging main",
+    "git-widget-placeholder": "main",
     "kotlin-language-version-configured": "true"
   }
 }]]></component>
   <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="Z:\VoxelHope" />
+      <recent name="Z:\VoxelHope\src\main\resources" />
+      <recent name="Z:\VoxelHope\src\main\java\org\example" />
+    </key>
     <key name="CopyClassDialog.RECENTS_KEY">
       <recent name="org.example" />
     </key>
